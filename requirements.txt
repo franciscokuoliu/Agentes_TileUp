@@ -1,0 +1,4 @@
+# TileUp usa solo la biblioteca estándar de Python.
+# Versión mínima: Python 3.10.
+#
+# No hay paquetes que instalar. Este archivo documenta esa ausencia.
