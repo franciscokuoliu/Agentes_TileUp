@@ -11,3 +11,6 @@ env/
 .DS_Store
 .vscode/
 .idea/
+
+test_instance.txt
+test_solution.txt
