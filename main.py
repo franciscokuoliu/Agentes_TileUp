@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine import IllegalActionError, TileUpEngine
+from search_agent import SearchAgent
 
 
 @dataclass
@@ -229,6 +230,37 @@ def demo(out=None) -> None:
         print(file=out)
 
 
+def _run_search(engine: TileUpEngine, args: argparse.Namespace, out) -> int:
+    print(f"TileUp n={engine.n} k={engine.k} fichas={engine.m} agente=search timeout={args.timeout}s", file=out)
+    found = SearchAgent(timeout=args.timeout).search(engine)
+    if found.status == "timeout":
+        print("RESULTADO: timeout", file=out)
+        print("Se agotó el tiempo antes de decidir si hay solución.", file=out)
+        print(f"nodos: {found.nodes}", file=out)
+        return 2
+    if found.status == "unsolvable":
+        print("RESULTADO: sin_solucion", file=out)
+        print("No existe una forma de colocar todas las fichas.", file=out)
+        print(f"nodos: {found.nodes}", file=out)
+        return 1
+    actions_text = ";".join(f"{row},{col}" for row, col in found.actions)
+    print(f"acciones: {actions_text}", file=out)
+    print(f"nodos: {found.nodes}", file=out)
+    played = replay(engine, list(found.actions))
+    if args.output:
+        Path(args.output).write_text(
+            SearchAgent(timeout=args.timeout).format_solution(found.actions, played.engine),
+            encoding="utf-8",
+        )
+    if args.verbose:
+        cursor = TileUpEngine(engine.n, list(zip(engine.tile_colors, engine.tile_values)), k=engine.k or None)
+        for row, col in found.actions:
+            move = cursor.apply_action(row, col)
+            print(f"({row},{col}) ficha {move.color}:{move.placed_value} {_move_detail(move)}", file=out)
+    print_result(played, out)
+    return 0 if played.status == "victory" else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="python main.py",
@@ -239,6 +271,12 @@ def build_parser() -> argparse.ArgumentParser:
     play = sub.add_parser("play", help="Coloca siempre la primera celda libre.")
     _add_instance_args(play)
     play.add_argument("--verbose", action="store_true")
+
+    search = sub.add_parser("search", help="Busca una secuencia ganadora.")
+    _add_instance_args(search)
+    search.add_argument("--timeout", type=float, default=5.0, help="Segundos para toda la búsqueda.")
+    search.add_argument("--output", help="Archivo de solución: indice fila columna.")
+    search.add_argument("--verbose", action="store_true")
 
     check = sub.add_parser("replay", help="Aplica una secuencia de celdas sobre el motor.")
     _add_instance_args(check)
@@ -267,6 +305,8 @@ def main(argv: list[str] | None = None, out=None) -> int:
         if args.command == "play":
             print(f"TileUp n={engine.n} k={engine.k} fichas={engine.m}", file=out)
             result = play_first_cells(engine, verbose=args.verbose, out=out)
+        elif args.command == "search":
+            return _run_search(engine, args, out)
         else:
             result = replay(engine, parse_actions(args.actions))
         print_result(result, out)

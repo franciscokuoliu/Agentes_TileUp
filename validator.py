@@ -145,7 +145,6 @@ def validate(instance_path: Path, solution_path: Path) -> None:
     occupied = occupied_cells(engine)
     status = "LEGAL" if legal else "ILEGAL"
     print(status)
-    print(f"colocadas={placed} ocupadas={occupied}")
     if summary:
         print(f"Resumen solución: {summary}")
     if not legal:

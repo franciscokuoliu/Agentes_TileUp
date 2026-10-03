@@ -12,6 +12,7 @@ import copy
 import io
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -21,6 +22,7 @@ if str(ROOT) not in sys.path:
 
 from engine import GameState, IllegalActionError, TileUpEngine
 from main import load_instance, main, parse_actions, parse_tiles
+from search_agent import SearchAgent
 
 
 def colocar(engine: TileUpEngine, row: int, col: int):
@@ -314,6 +316,53 @@ class TestCli(unittest.TestCase):
         )
         self.assertEqual(bad, 2)
         self.assertIn("RESULTADO: ilegal", bad_out.getvalue())
+
+
+class TestAgenteBusqueda(unittest.TestCase):
+    def test_encuentra_la_ele_sin_mutar_el_estado(self) -> None:
+        engine = TileUpEngine(2, [(1, 2), (1, 5), (1, 10)], k=1)
+        before = engine.state_key()
+        found = SearchAgent(timeout=2).search(engine)
+        self.assertEqual(engine.state_key(), before)
+        self.assertEqual(found.status, "victory")
+        self.assertEqual(len(found.actions), 3)
+        played = TileUpEngine(2, [(1, 2), (1, 5), (1, 10)], k=1)
+        for row, col in found.actions:
+            played.apply_action(row, col)
+            played.check_invariants()
+        self.assertTrue(played.is_victory())
+        text = SearchAgent(timeout=2).format_solution(found.actions, played)
+        occupied = sum(color != 0 for color in played.colors)
+        highest = max(played.values)
+        self.assertIn(
+            f"# colocadas={played.tile_index} ocupadas={occupied} mayor={highest}",
+            text,
+        )
+        for index, (row, col) in enumerate(found.actions):
+            self.assertIn(f"{index} {row} {col}", text)
+
+    def test_declara_sin_solucion_si_el_tablero_no_alcanza(self) -> None:
+        engine = TileUpEngine(2, [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1)], k=5)
+        found = SearchAgent(timeout=2).search(engine)
+        self.assertEqual(found.status, "unsolvable")
+        self.assertEqual(found.actions, ())
+
+    def test_el_tiempo_agotado_no_se_confunde_con_derrota(self) -> None:
+        engine = TileUpEngine(3, [(1, 1)] * 6, k=1)
+        found = SearchAgent(timeout=2).search(engine, deadline=time.monotonic() - 1)
+        self.assertEqual(found.status, "timeout")
+        self.assertEqual(found.actions, ())
+
+    def test_cli_search(self) -> None:
+        out = io.StringIO()
+        code = main(
+            ["search", "--n", "2", "--k", "1", "--tiles", "1:2,1:5,1:10", "--timeout", "2"],
+            out=out,
+        )
+        text = out.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("RESULTADO: victoria", text)
+        self.assertIn("acciones:", text)
 
 
 if __name__ == "__main__":

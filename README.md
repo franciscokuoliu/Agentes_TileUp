@@ -1,6 +1,6 @@
 # TileUp
 
-Puzzle determinista de un jugador. El motor coloca una secuencia fija de fichas en un tablero `N x N` y fusiona componentes ortogonales del mismo color. Por ahora el proyecto es el motor, las pruebas y la entrada por línea de comandos.
+Puzzle determinista de un jugador. El motor coloca una secuencia fija de fichas en un tablero `N x N` y fusiona componentes ortogonales del mismo color. El motor aplica las reglas. El agente de búsqueda prueba celdas hasta colocar todas las fichas.
 
 ## Reglas
 
@@ -28,8 +28,9 @@ pip install -r requirements.txt
 
 ```text
 Agentes_TileUp/
-├── main.py                 # CLI: demo, play y replay
+├── main.py                 # CLI: demo, play, search y replay
 ├── engine.py               # TileUpEngine / GameState
+├── search_agent.py         # Búsqueda en profundidad de una solución
 ├── tests.py
 ├── requirements.txt
 ├── README.md
@@ -42,6 +43,12 @@ Desde esta carpeta:
 
 ```text
 python main.py demo
+```
+
+`search` busca una secuencia que coloque todas las fichas:
+
+```text
+python main.py search --n 2 --k 1 --tiles 1:2,1:5,1:10 --timeout 5
 ```
 
 `play` coloca siempre la primera celda libre, en orden fila-mayor:
