@@ -13,6 +13,7 @@ from pathlib import Path
 
 from engine import IllegalActionError, TileUpEngine
 from search_agent import SearchAgent
+from solver import add_solve_arguments, run_solve
 
 
 @dataclass
@@ -282,6 +283,10 @@ def build_parser() -> argparse.ArgumentParser:
     _add_instance_args(check)
     check.add_argument("--actions", required=True, help="Ejemplo: 0,0;1,1;1,0")
 
+    solve = sub.add_parser("solve", help="Ejecuta un agente y escribe el archivo de solución.")
+    _add_instance_args(solve)
+    add_solve_arguments(solve)
+
     sub.add_parser("demo", help="Muestra colocación, fusiones y derrota.")
     return parser
 
@@ -307,6 +312,8 @@ def main(argv: list[str] | None = None, out=None) -> int:
             result = play_first_cells(engine, verbose=args.verbose, out=out)
         elif args.command == "search":
             return _run_search(engine, args, out)
+        elif args.command == "solve":
+            return run_solve(n, k, tiles, args, out)
         else:
             result = replay(engine, parse_actions(args.actions))
         print_result(result, out)
