@@ -31,6 +31,10 @@ Agentes_TileUp/
 ├── main.py                 # CLI: demo, play, search y replay
 ├── engine.py               # TileUpEngine / GameState
 ├── search_agent.py         # Búsqueda en profundidad de una solución
+├── evolutionary_agent.py   # Agente evolutivo: política por características y ciclo evolutivo
+├── solver.py               # Comando solve: ejecuta un agente y escribe la solución
+├── test_evolutionary.py
+├── test_solver.py          # Integración: solve + validador
 ├── tests.py
 ├── requirements.txt
 ├── README.md
@@ -44,6 +48,24 @@ Desde esta carpeta:
 ```text
 python main.py demo
 ```
+
+`solve` es el punto de entrada oficial. Recibe la instancia, el agente (`search` o `evo`), la semilla y el límite de tiempo en segundos, y escribe siempre el archivo de solución, también en derrota:
+
+```text
+python main.py solve --instance instancia.txt --agent evo --seed 1 --time-limit 10 --output solucion.txt
+```
+
+Imprime por salida estándar las fichas colocadas, las celdas ocupadas, la ficha mayor, el tiempo y el esfuerzo (nodos expandidos en la búsqueda, evaluaciones de aptitud en el evolutivo). Termina con código `0` si escribió la solución y `3` ante un error de entrada.
+
+Opciones de visualización:
+
+| Opción | Efecto |
+| --- | --- |
+| `--show-board` | Imprime el tablero final. |
+| `--show-progress` | Evolutivo: generaciones en que mejoró la mejor partida. |
+| `--history-csv RUTA` | Evolutivo: mejor aptitud por generación, en CSV. |
+
+Parámetros del agente evolutivo (valores por defecto entre paréntesis): `--population` (30), `--generations` (100), `--stall` (25), `--tournament` (3), `--elite` (2), `--crossover-rate` (0.9), `--mutation-rate` (0.3), `--mutation-sigma` (1.5), `--lookahead` (4). `python main.py solve --help` muestra la lista completa.
 
 `search` busca una secuencia que coloque todas las fichas:
 
@@ -87,9 +109,10 @@ Las líneas en blanco y el texto tras `#` se ignoran.
 ## Pruebas
 
 ```text
-python tests.py -v
-python -m unittest tests -v
+python -m unittest discover -v
 ```
+
+Ejecuta las pruebas del motor (`tests.py`), del agente evolutivo (`test_evolutionary.py`) y las de integración del comando `solve` con el validador (`test_solver.py`).
 
 Cubren colocación sin fusión, fusión de dos fichas, componentes en L y en T, derrota con tablero lleno y el clonado.
 
