@@ -1,0 +1,13 @@
+variante,instancia,m,semilla,colocadas,ocupadas,aptitud,evaluaciones,generaciones,paro,tiempo
+mutation_rate=0.1,N4_K10_M100,100,1,86,16,1446,846,54,estancamiento,0.268
+mutation_rate=0.1,N4_K10_M100,100,2,79,16,1327,1059,54,estancamiento,0.379
+mutation_rate=0.1,N4_K10_M100,100,3,78,16,1310,608,30,estancamiento,0.2
+mutation_rate=0.1,N5_K12_M150,150,1,150,12,3888,652,31,estancamiento,0.768
+mutation_rate=0.1,N5_K12_M150,150,2,150,12,3888,594,28,estancamiento,0.706
+mutation_rate=0.1,N5_K12_M150,150,3,150,12,3888,668,27,estancamiento,0.819
+mutation_rate=0.1,N5_K20_M150,150,1,52,25,1327,833,44,estancamiento,0.31
+mutation_rate=0.1,N5_K20_M150,150,2,54,25,1379,657,30,estancamiento,0.252
+mutation_rate=0.1,N5_K20_M150,150,3,52,25,1327,710,30,estancamiento,0.273
+mutation_rate=0.1,N6_K15_M300,300,1,300,15,11085,612,28,estancamiento,1.89
+mutation_rate=0.1,N6_K15_M300,300,2,300,15,11085,573,28,estancamiento,1.817
+mutation_rate=0.1,N6_K15_M300,300,3,300,15,11085,621,27,estancamiento,2.018

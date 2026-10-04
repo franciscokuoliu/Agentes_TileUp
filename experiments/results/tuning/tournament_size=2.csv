@@ -1,0 +1,13 @@
+variante,instancia,m,semilla,colocadas,ocupadas,aptitud,evaluaciones,generaciones,paro,tiempo
+tournament_size=2,N4_K10_M100,100,1,85,16,1429,978,35,estancamiento,0.257
+tournament_size=2,N4_K10_M100,100,2,85,16,1429,2016,73,estancamiento,0.579
+tournament_size=2,N4_K10_M100,100,3,78,16,1310,1089,39,estancamiento,0.3
+tournament_size=2,N5_K12_M150,150,1,150,12,3888,815,29,estancamiento,0.864
+tournament_size=2,N5_K12_M150,150,2,150,12,3888,814,29,estancamiento,0.851
+tournament_size=2,N5_K12_M150,150,3,150,12,3888,878,31,estancamiento,0.903
+tournament_size=2,N5_K20_M150,150,1,57,25,1457,942,34,estancamiento,0.341
+tournament_size=2,N5_K20_M150,150,2,55,25,1405,1110,40,estancamiento,0.403
+tournament_size=2,N5_K20_M150,150,3,56,25,1431,920,33,estancamiento,0.335
+tournament_size=2,N6_K15_M300,300,1,300,15,11085,869,31,estancamiento,2.303
+tournament_size=2,N6_K15_M300,300,2,300,15,11085,817,29,estancamiento,2.178
+tournament_size=2,N6_K15_M300,300,3,300,15,11085,739,26,estancamiento,1.863

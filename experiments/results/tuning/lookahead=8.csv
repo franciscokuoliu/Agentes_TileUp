@@ -1,0 +1,13 @@
+variante,instancia,m,semilla,colocadas,ocupadas,aptitud,evaluaciones,generaciones,paro,tiempo
+lookahead=8,N4_K10_M100,100,1,89,16,1497,1581,58,estancamiento,0.459
+lookahead=8,N4_K10_M100,100,2,71,16,1191,848,30,estancamiento,0.24
+lookahead=8,N4_K10_M100,100,3,73,16,1225,1170,42,estancamiento,0.339
+lookahead=8,N5_K12_M150,150,1,150,12,3888,725,26,estancamiento,0.731
+lookahead=8,N5_K12_M150,150,2,150,12,3888,789,28,estancamiento,0.879
+lookahead=8,N5_K12_M150,150,3,150,12,3888,840,30,estancamiento,0.96
+lookahead=8,N5_K20_M150,150,1,62,25,1587,1113,40,estancamiento,0.448
+lookahead=8,N5_K20_M150,150,2,62,25,1587,839,30,estancamiento,0.328
+lookahead=8,N5_K20_M150,150,3,59,25,1509,974,35,estancamiento,0.381
+lookahead=8,N6_K15_M300,300,1,300,15,11085,781,28,estancamiento,2.283
+lookahead=8,N6_K15_M300,300,2,300,15,11085,765,27,estancamiento,2.226
+lookahead=8,N6_K15_M300,300,3,300,15,11085,786,28,estancamiento,2.327
