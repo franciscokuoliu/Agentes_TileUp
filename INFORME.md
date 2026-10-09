@@ -8,7 +8,66 @@ El orden de calidad de una solución es el del concurso: primero más fichas col
 
 ## 2. Agente de búsqueda
 
-*Pendiente.*
+Implementación: `search_agent.py`. Ejecución: `python main.py solve --agent search`.
+
+### 2.1 Formulación
+
+El agente decide si existe una secuencia de celdas que coloque las M fichas. Toda colocación completa tiene exactamente M jugadas, así que la búsqueda devuelve la primera victoria que encuentra. Con eso satisface el primer criterio del concurso cuando la victoria cabe en el tiempo. El segundo criterio, menos celdas ocupadas, queda fuera: la búsqueda se detiene al hallar cualquier victoria.
+
+Un estado es el tablero junto con el índice de la próxima ficha. El estado inicial es el tablero vacío y el índice 0. Una acción es una celda vacía. `apply_action` coloca la ficha actual, fusiona una vez la componente ortogonal de su color y avanza el índice. Cada hijo sale de `clone()` seguido de `apply_action`, y el estado recibido queda intacto.
+
+El nodo es objetivo cuando `is_victory()` (el índice llega a M). Es fracaso inmediato cuando `is_defeat()` (el tablero está lleno y quedan fichas).
+
+### 2.2 Estrategia
+
+Backtracking en profundidad. En cada nodo se prueban las celdas vacías en el orden de la sección 2.3. El primer hijo que devuelve un plan se acepta, y la celda elegida se antepone a ese plan. Si todos los hijos fracasan, el nodo fracasa.
+
+La profundidad encaja con el problema por tres razones:
+
+1. Toda victoria está a profundidad M, así que explorar por niveles no acorta la solución.
+2. La memoria de la pila crece con la longitud del camino, y la frontera de una búsqueda por niveles crecería con las celdas vacías de cada posición.
+3. Con el orden de la sección 2.3, en instancias con pocos colores el primer camino ya es ganador. En la comparación, C1, C2, C3 y C5 expanden exactamente M + 1 nodos.
+
+El costo aparece cuando ese orden deja de llevar a una victoria: el factor de ramificación es el número de celdas vacías, a lo más N², y el retroceso recorre un árbol de esa anchura.
+
+### 2.3 Orden de expansión
+
+Las celdas vacías se ordenan por la cantidad de vecinos ortogonales del color de la ficha actual, de mayor a menor. El ordenamiento de Python es estable y `get_valid_actions` entrega las celdas en orden fila-mayor, así que los empates conservan ese orden.
+
+Esa cantidad es el número de fichas que la colocación absorbe: la componente fusionada tiene tamaño igual al conteo más uno, el mismo dato que la característica `absorbe` del agente evolutivo. Probar primero las fusiones grandes libera celdas pronto y retrasa el llenado del tablero. El criterio solo usa el color de la ficha que se va a colocar.
+
+### 2.4 Memoria de estados fallidos
+
+Si un estado se explora por completo y ninguno de sus hijos lleva a una victoria, su clave se guarda. Una visita posterior al mismo estado se descarta.
+
+La clave es `state_key()`: `(n, índice de ficha, colores, valores)`. El índice fija el sufijo de la secuencia que falta, así que la clave identifica una posición de esta partida. Memorizar solo los fracasos es correcto porque el juego es determinista: si de un estado no sale ninguna victoria, tampoco saldrá al llegar a él por otro camino. La búsqueda se detiene en la primera victoria, y por eso las victorias no se guardan.
+
+La clave incluye los valores de las fichas. La legalidad de las jugadas futuras depende de los colores y de las celdas vacías, así que dos tableros con los mismos colores y valores distintos son el mismo problema de colocación. La poda sigue siendo correcta; al distinguir esos valores, descarta menos estados de los que las reglas permitirían.
+
+### 2.5 Criterio de paro
+
+Se detiene ante lo primero que ocurra:
+
+- una victoria: el plan se reconstruye al volver de la recursión y el estado es `victory`;
+- el árbol agotado: estado `unsolvable` y plan vacío, lo que prueba que no hay forma de colocar las M fichas;
+- el límite de tiempo: al entrar a un nodo, si `time.monotonic()` ya alcanzó el instante límite, la búsqueda aborta con estado `timeout` y plan vacío.
+
+El tiempo agotado no se anota como fracaso del estado en curso, porque la instancia puede seguir teniendo solución. El único parámetro es ese límite: `--time-limit` en `solve` (10 s por defecto) y `--timeout` en el comando `search` (5 s por defecto). El orden de movimientos está fijo, así que no hay un barrido de parámetros análogo al de la sección 3.8.
+
+### 2.6 Determinismo y medida de esfuerzo
+
+La expansión es una función del tablero y de la ficha actual. La semilla de `solve` no interviene. Con tiempo suficiente, la misma instancia produce el mismo plan y el mismo número de nodos. Si el paro lo provoca el reloj, el número de nodos depende de cuántos alcanzó a expandir la máquina; el plan devuelto es vacío.
+
+La medida de esfuerzo es el número de nodos en los que entra la búsqueda, contando la raíz y los nodos terminales. Una victoria por el primer camino, sin retroceso, cuesta M + 1 nodos. Cada hijo se clona en O(N²). Cada nodo que se expande materializa `state_key()`, del mismo orden, y esa clave se conserva solo si el nodo fracasa.
+
+### 2.7 Limitaciones
+
+Dos huecos de esta versión explican las cifras de búsqueda de las secciones 4 y 5.
+
+- **El plan de `timeout` y de `unsolvable` es vacío.** La búsqueda no conserva el mejor prefijo del camino en curso. `solve` escribe entonces una solución de cero fichas. En C4 eso ocurre después de más de un millón de nodos.
+- **La búsqueda es recursiva.** La profundidad de la pila es el número de fichas colocadas en el camino. El límite de recursión de CPython es 1000 por defecto, y el código no lo modifica. Con M = 1200 el primer camino ya lo supera, sea cual sea el factor de ramificación. Es el `RecursionError` de C6.
+
+Entregar el mejor prefijo al agotar el tiempo, y sustituir la recursión por una pila explícita, queda pendiente. Hasta entonces, las secciones 4 y 5 describen esta versión.
 
 ## 3. Agente evolutivo
 
@@ -221,5 +280,14 @@ Colocadas en % de M y tiempo: media ± desviación estándar entre semillas (una
   - verificación del límite de tiempo;
   - revisión de que las cifras del informe coinciden con los CSV.
 - Las decisiones de diseño se discutieron y comprendieron antes de integrarlas.
+
+**Francisco Kuo Liu (motor determinista, agente de búsqueda).**
+
+- El motor de juego (`engine.py`, la interfaz de línea de comandos de esa parte y las pruebas del motor) está hecho por completo con inteligencia artificial (Grok).
+- El agente de búsqueda (`search_agent.py`) se implementó con apoyo de inteligencia artificial.
+- Revisé y verifiqué el agente de búsqueda y la sección 2:
+  - el backtracking, el orden de expansión y la memoria de estados fallidos coinciden con `search_agent.py`;
+  - los estados `victory`, `unsolvable` y `timeout`, y que un tiempo agotado deja el plan vacío;
+  - el conteo de nodos: una victoria sin retroceso cuesta M + 1 nodos, como en C1, C2, C3 y C5;
 
 *Pendiente: declaraciones de los demás integrantes.*
