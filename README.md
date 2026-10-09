@@ -28,17 +28,27 @@ pip install -r requirements.txt
 
 ```text
 Agentes_TileUp/
-├── main.py                 # CLI: demo, play, search y replay
-├── engine.py               # TileUpEngine / GameState
-├── search_agent.py         # Búsqueda en profundidad de una solución
-├── evolutionary_agent.py   # Agente evolutivo: política por características y ciclo evolutivo
+├── main.py                 # CLI: solve (oficial), demo, play, search y replay
+├── engine.py               # Motor del juego: TileUpEngine / GameState
+├── search_agent.py         # Agente de búsqueda
+├── evolutionary_agent.py   # Agente evolutivo
 ├── solver.py               # Comando solve: ejecuta un agente y escribe la solución
-├── test_evolutionary.py
+├── validator.py            # Validador independiente de soluciones
+├── generate.py             # Generador de instancias parametrizado por N, K, M y semilla
+├── tests.py                # Pruebas del motor y del CLI
+├── test_evolutionary.py    # Pruebas del agente evolutivo
 ├── test_solver.py          # Integración: solve + validador
-├── tests.py
-├── requirements.txt
+├── test_generate.py        # Pruebas del generador
+├── experiments/
+│   ├── tune_evo.py         # Barrido de parámetros del evolutivo
+│   ├── run_comparison.py   # Comparación experimental (6 configuraciones × 3 semillas)
+│   ├── run_scalability.py  # Escalabilidad en N y K, con gráficas SVG
+│   ├── comparison/         # Instancias, soluciones y resultados de la comparación
+│   └── scalability/        # Instancias, soluciones, resultados y gráficas
+├── Dockerfile, tileup.sh   # Ejecución con Docker
+├── Makefile                # Atajos: make test, make experiments
 ├── README.md
-└── INFORME.md              # Plantilla del informe
+└── INFORME.md              # Formulación de los agentes y resultados
 ```
 
 ## Ejecución
@@ -87,6 +97,44 @@ python main.py replay --n 2 --k 1 --tiles 1:2,1:5,1:10 --actions 0,0;1,1;1,0
 
 Esa secuencia es la L: las dos primeras fichas solo se tocan en diagonal y la tercera, en `(1,0)`, las fusiona en `1:17`.
 
+## Ejecución con Docker
+
+Para no depender del Python de la máquina, `tileup.sh` construye la imagen y ejecuta el programa con el directorio actual montado. Las rutas son relativas a ese directorio:
+
+Requiere Docker en ejecución (en macOS y Windows, Docker Desktop abierto); si no, `docker build` falla con un error de conexión al daemon.
+
+```text
+./tileup.sh solve --instance instancia.txt --agent evo --seed 1 --time-limit 10
+./tileup.sh test
+```
+
+Equivalente sin el script:
+
+```text
+docker build -t tileup .
+docker run --rm -v "$PWD":/work tileup solve --instance instancia.txt --agent evo --seed 1 --time-limit 10
+```
+
+## Generar instancias
+
+```text
+python generate.py --n 6 --k 4 --m 120 --seed 1 --output instancia.txt
+```
+
+La misma combinación de parámetros produce siempre el mismo archivo.
+
+## Experimentos
+
+Cada guion invoca `main.py solve` como proceso aparte, valida cada solución con `validator.py` y guarda instancias, soluciones y resultados junto al guion. Las ejecuciones ya hechas se omiten; para repetirlas se borra la carpeta `runs/` del estudio.
+
+| Comando | Qué produce |
+| --- | --- |
+| `python experiments/tune_evo.py` | Barrido de parámetros del evolutivo → `experiments/results/` |
+| `python experiments/run_comparison.py` | Comparación de ambos agentes → `experiments/comparison/summary.md` |
+| `python experiments/run_scalability.py` | Escalabilidad en N y K → `experiments/scalability/` (tabla y gráficas SVG) |
+
+`make experiments` corre los tres.
+
 ## Archivo de instancia
 
 ```text
@@ -112,7 +160,7 @@ Las líneas en blanco y el texto tras `#` se ignoran.
 python -m unittest discover -v
 ```
 
-Ejecuta las pruebas del motor (`tests.py`), del agente evolutivo (`test_evolutionary.py`) y las de integración del comando `solve` con el validador (`test_solver.py`).
+Ejecuta las pruebas del motor (`tests.py`), del agente evolutivo (`test_evolutionary.py`), del generador (`test_generate.py`) y las de integración del comando `solve` con el validador (`test_solver.py`). También: `make test` o `./tileup.sh test`.
 
 Cubren colocación sin fusión, fusión de dos fichas, componentes en L y en T, derrota con tablero lleno y el clonado.
 
