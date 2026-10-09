@@ -16,3 +16,7 @@ test_instance.txt
 test_solution.txt
 instancia.txt
 solucion.txt
+
+# Caché de ejecuciones de los experimentos (se regenera; results.csv conserva los datos)
+experiments/comparison/runs/
+experiments/scalability/runs/
