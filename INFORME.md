@@ -289,5 +289,11 @@ Colocadas en % de M y tiempo: media ± desviación estándar entre semillas (una
   - el backtracking, el orden de expansión y la memoria de estados fallidos coinciden con `search_agent.py`;
   - los estados `victory`, `unsolvable` y `timeout`, y que un tiempo agotado deja el plan vacío;
   - el conteo de nodos: una victoria sin retroceso cuesta M + 1 nodos, como en C1, C2, C3 y C5;
+  
+**Jimmy Feng Liu (validador independiente).**
 
-*Pendiente: declaraciones de los demás integrantes.*
+- Se usó Claude (Anthropic) como asistente para elaborar `validator.py`, que valida los archivos solución generados por los agentes. El validador es independiente de los agentes: no reutiliza su lógica de decisión, solo reproduce las jugadas del archivo solución.
+- Lo generado se revisó y se verificó manualmente:
+  - ejecución del validador sobre las soluciones de prueba para verificar su correcto funcionamiento;
+  - revisión de que el tablero final y la línea resumen de cada solución (`ocupadas`, `mayor`) coinciden;
+- El validador reutiliza funciones del propio motor de juego (`engine.py`) para aplicar las jugadas, de modo que sigue la misma lógica de juego al comprobar las soluciones. Por tanto, su independencia es respecto a los agentes y no respecto al motor.
