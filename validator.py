@@ -151,11 +151,17 @@ def validate(instance_path: Path, solution_path: Path) -> None:
         print(f"Motivo: {illegal_reason}")
     print("Tablero final:")
     print(engine.format_board())
-
+    
     if not legal:
+        print("RESULTADO: ILEGAL")
         sys.exit(2)
     if engine.is_victory():
+        print(f"RESULTADO: VICTORIA ({placed}/{engine.m} fichas colocadas, {occupied} celdas ocupadas)")
         sys.exit(0)
+    if engine.is_defeat():
+        print(f"RESULTADO: DERROTA (tablero lleno, {placed}/{engine.m} fichas colocadas)")
+        sys.exit(1)
+    print(f"RESULTADO: INCOMPLETA (la solucion termina con celdas libres, {placed}/{engine.m} fichas colocadas)")
     sys.exit(1)
 
 
